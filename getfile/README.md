@@ -45,4 +45,4 @@ Everything, that fits in browser's localStorage should be fine:
 ### Cookies and privacy
 
 Library is not using cookies. Cookies are shared between browser and server - localStorage exists only inside browser.
-It still can he read by server, script or **malicious code**, so always think twice about safety.
+It still can be read by server, script or **malicious code**, so always think twice about safety.
