@@ -1,6 +1,6 @@
 # getfile
 
-This library will use localStorage api to save fetched data.
+This library will download desired file and use localStorage api to save fetched data.
 Getfile will only fetch when file is not in localStorage or live version is newer than localStorage version.
 When saving to localStorage, saved data is compared with original, so overflowed and not valid localStorage data will be removed automatically.
 
