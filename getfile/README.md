@@ -19,3 +19,5 @@ Async:
 const data = await getFile("./path/to.file");
 //console.log(data);
 ```
+
+## Details
