@@ -29,7 +29,7 @@ is to separate code different than HTML, CSS and JS does:
 
 ### Templates file
 
-Add templates.txt to your project location and add `data-templates=./path/to/templates.txt` to `<script>` tag containg library.
+Add templates.txt to your project location and add `data-templates=./path/to/templates.txt` to `<script>` tag executing library.
 
 This file holds every custom template used by library. Here you can write your code.
 Inside file, start every new template with `[!uniqueTemplateName]` where `uniqueTemplateName` is an identifier you pick for future usage.
