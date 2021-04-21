@@ -9,7 +9,7 @@ is to separate code different than HTML, CSS and JS does:
 1. **data** - pure content. Literally letters and bytes of media files.
 2. **structure** - markup containing: 
     - type of part - like text, data file or slider
-    - config - part specific data to set - like template name, number of slides or popup conditions
+    - config - part specific data to set - like number of slides or popup conditions
     - inner (**data** or **structure**)
 
 ...but these two will result in code, that:
@@ -29,69 +29,51 @@ is to separate code different than HTML, CSS and JS does:
 
 ### Templates file
 
-Add templates.txt to your project location and add `data-templates=./path/to/templates.txt` to `<script>` tag executing library.
+Add templates.txt to your project location and add `data-templates=./path/to/templates.txt` to `<script>` tag executing the library.
 
-This file holds every custom template used by library. Here you can write your code.
-Inside file, start every new template with `[!uniqueTemplateName]` where `uniqueTemplateName` is an identifier you pick for future usage.
+This file holds every custom template used by the library. Here you can write your code.
 
+### Syntax
 
-### Basic HTML
-
-- **`[1][1.]` - `[6][6.]`** - `<h1></h1>` - `<h6></h6>`
-- **`[7][7.]`** - `<strong></strong>`
-- **`[8][8.]`** - `<b></b>` extra bold
-- **`[9][9.]`** - `<b></b>` bold
-- **`[10][10.]`** - `<b></b>` medium
-- **`[]`** - `<p></p>`
-- **`[-][-.]`** - `<span></span>`
-- **`[#./path/to.jpg]`** - `<img src="./path/to.jpg">`
-- **`[#./path/to.mp3]`** - `<audio><source src="./path/to.mp3" type="audio/mp3"></audio>`
-- **`[#./path/to.mp4]`** - `<video><source src="./path/to.mp4" type="video/mp4"></video>`
-- **`[@example.com][@.]`** - `<a href="example.com">example.com</a>`
-- **`[@example@mail.com][@.]`** - `<a href="mailto:example@mail.com">example@mail.com</a>`
-- **`[@123456789][@.]`** - `<a href="tel:123456789">123456789</a>`
-
-### Layout
-
-- **`[>][>.]`** - `<div></div>` - flex row
-- **`[<][<.]`** - `<div></div>` - flex row-reverse
-- **`[\][\.]`** - `<div></div>` - flex column
-- **`[/][/.]`** - `<div></div>` - flex column-reverse
-- **`[-][-.]`** - `<span></span>` - inline
-
-### Parts with JS
-
-- **`[+code]`** - popup with inner code
-- **`[=codes]`** - slider where `codes` are parts to use as slides
-- **`[$partid]`** - toggler where `partid` is id of toggler target
-
-### Config
-
-Config tells details about how things should work.
-
-#### Page config
-
-Add page config into templates.txt file:
-`[~key]data`
+Use templates to reuse elements.
 
 ```
-[~screensizes]360,992,1300
-[~fontsizes]6,8,10
+<template-name></template> to define new template called name
+
+<template-example>
+    <data-name> to define data slot called name
+</template>
+
+<template .example>
+    <name> to fill slot called name with data
+        //some data 
+    </name>
+</template>
 ```
 
-#### Page config settings list
-
-#### Part config
-
-After opening `[part]` tag you can add three config options:
-`[part](partSpecificConfig, partClassList, partIDList)`
+Use data elements to throw data into structure.
 
 ```
-[@my@mail.com](, link link--email, my_email)
-    Mail me!
-[@.]
+<data ./photo.jpg> image
+<data ./audio.mp3> HTML5 audio player
+<data ./video.mp4> HTML5 video player
+<data ./style.css> stylesheet link
+<data ./script.js> script source
+<data ./example.txt> content of file
+<data ./example.html> content of file
+<data https://grezisek.github.io/> iframe
 ```
-#### Part config settings list
 
+Use structure elements to hold data elements or other structure elements.
 
-## Details
+```
+<struct>
+    //some data
+</struct>
+
+<struct col-992-row></struct> column on mobile, row above 992px width
+<struct loc-500h-wor-1300w?600h-grid></struct> column-reverse on mobile, row-reverse above 500px height, grid above 1300px width or 600px height
+<struct .name></struct> if you want to reuse properties
+<struct-name col-992w-row> if you want to define properties
+<struct col-992-row.name3.name2></struct> if you need to combine many properties (last reusable properties are the most important)
+```
