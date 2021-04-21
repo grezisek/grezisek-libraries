@@ -44,7 +44,7 @@ Use templates to reuse elements.
     <data-name> to define data slot called name
 </template>
 
-<template .example> to use template called example
+<template example>
     <name> to fill slot called name with data
         //some data 
     </name>
@@ -62,6 +62,7 @@ Use data elements to throw data into structure.
 <data ./example.txt> content of file
 <data ./example.html> content of file
 <data https://grezisek.github.io/> iframe
+<data @https://grezisek.github.io/> hyperlink
 ```
 
 Use structure elements to hold data elements or other structure elements.
