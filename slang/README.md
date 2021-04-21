@@ -44,7 +44,7 @@ Use templates to reuse elements.
     <data-name> to define data slot called name
 </template>
 
-<template .example>
+<template .example> to use template called example
     <name> to fill slot called name with data
         //some data 
     </name>
