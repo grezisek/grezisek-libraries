@@ -29,7 +29,7 @@ is to separate code different than HTML, CSS and JS does:
 
 ### Templates file
 
-Add templates.txt to your project location and add `data-templates=./path/to/templates.txt` to `<script>` tag executing the library.
+Add templates.txt to your project location and add `slot templates=./path/to/templates.txt` to `<script>` tag executing the library.
 
 This file holds every custom template used by the library. Here you can write your code.
 
@@ -38,11 +38,11 @@ This file holds every custom template used by the library. Here you can write yo
 Use templates to reuse elements.
 
 ```
-<template-name></template> to define new template called name
+<template-name></template-name> to define new template called name
 
 <template-example>
-    <data-name> to define data slot called name
-</template>
+    <slot name> to define slot called name
+</template-example>
 
 <template example>
     <name> to fill slot called name with data
@@ -51,30 +51,6 @@ Use templates to reuse elements.
 </template>
 ```
 
-Use data elements to throw data into structure.
+## Alpha stage
 
-```
-<data ./photo.jpg> image
-<data ./audio.mp3> HTML5 audio player
-<data ./video.mp4> HTML5 video player
-<data ./style.css> stylesheet link
-<data ./script.js> script source
-<data ./example.txt> content of file
-<data ./example.html> content of file
-<data https://grezisek.github.io/> iframe
-<data @https://grezisek.github.io/> hyperlink
-```
-
-Use structure elements to hold data elements or other structure elements.
-
-```
-<struct>
-    //some data
-</struct>
-
-<struct col-992-row></struct> column on mobile, row above 992px width
-<struct loc-500h-wor-1300w?600h-grid></struct> column-reverse on mobile, row-reverse above 500px height, grid above 1300px width or 600px height
-<struct .name></struct> if you want to reuse properties
-<struct-name col-992w-row> if you want to define properties
-<struct col-992-row.name3.name2></struct> if you need to combine many properties (last reusable properties are the most important)
-```
+Features are still in development
