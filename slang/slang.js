@@ -1,8 +1,8 @@
-slang = (() => async (slangMarkup = "", templateCollection, outputContainer) => {
+slang = (() => (slangMarkup = "", templateCollection, outputContainer) => {
     if (!templateCollection) return;
 
-    templateCollection = await (async tempRoot => {
-        tempRoot.innerHTML = await templateCollection;
+    templateCollection = ( tempRoot => {
+        tempRoot.innerHTML = templateCollection;
         const templates = {};
         Array.prototype.forEach.call(
             tempRoot.children,
@@ -41,9 +41,8 @@ slang = (() => async (slangMarkup = "", templateCollection, outputContainer) => 
             queue.forEach(node => renderDefs[node.localName](node));
             queue = root.querySelectorAll(renderDefsKeys);
         }
-        return root.innerHTML;
+        return root;
     }
-
-    if (outputContainer) outputContainer.innerHTML = renderer(outputContainer)
-    else return renderer(document.createElement("div"));
+    if (outputContainer) outputContainer.innerHTML = renderer(outputContainer).innerHTML
+    else return renderer(document.createElement("div")).innerHTML;
 })();
