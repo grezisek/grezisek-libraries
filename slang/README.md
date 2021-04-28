@@ -57,6 +57,10 @@ Template file:
 
 ```
 <template-page>
+    <nav>
+        <a href="/">home</a>
+        <a href="?page=contact">contact</a>
+    </nav>
     <h1>
         <slot pagetitle/>
     </h1>
@@ -78,6 +82,25 @@ Template file:
         
     </template>
 </template-home>
+
+<template-contact>
+    <template page>
+        <pagetitle>
+            Contact
+        </pagetitle>
+        <pagedescription>
+            Contact me!
+        </pagedescription>
+    </template>
+</template-contact>
+
+<template-pagenotfound>
+    <template page>
+        <pagetitle>404</pagetitle>
+        <pagedescription>not found</pagedescription>
+    </template>
+</template-pagenotfound>
+
 ```
 
 HTML file:
