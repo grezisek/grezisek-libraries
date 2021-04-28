@@ -93,7 +93,6 @@ HTML file:
 </head>
 <body>
     <main>
-        <template home></template>
     </main>
 
     <script src="./slang.js"></script>
@@ -101,8 +100,51 @@ HTML file:
         async function init() {
             const templates = await fetch("./templates.txt").then(response => response.text());
             const mainContainer = document.querySelector("main");
-            slang(
-                mainContainer.innerHTML,
+
+            const database = {
+                "" : "<template home></template>",
+                "page" : {
+                    "home" : "<template home></template>",
+                    "contact" : "<template contact></template>"
+                },
+                "404" : "<template pagenotfound></template>"
+            }
+
+            const searchParams = new URLSearchParams(window.location.search).entries().next();
+
+            if (searchParams.done) {
+                if (database[window.location.search])
+                    return slang(
+                        database[window.location.search],
+                        templates,
+                        mainContainer
+                    )
+                else return slang(
+                    database["404"],
+                    templates,
+                    mainContainer
+                )
+            }
+                
+
+            if (typeof database[searchParams.value[0]] === "string" ||
+                database[searchParams.value[0]] instanceof String
+            ) return slang(
+                database[searchParams.value[0]],
+                templates,
+                mainContainer
+            );
+            
+            if (typeof database[ searchParams.value[0] ][ searchParams.value[1] ] === "string" ||
+                database[ searchParams.value[0] ][ searchParams.value[1] ] instanceof String
+            ) return slang(
+                database[ searchParams.value[0] ][ searchParams.value[1] ],
+                templates,
+                mainContainer
+            );
+
+            return slang(
+                database["404"],
                 templates,
                 mainContainer
             );
