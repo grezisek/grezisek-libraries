@@ -29,7 +29,7 @@ is to separate code different than HTML, CSS and JS does:
 
 ### Templates file
 
-Add templates.txt to your project location and add `slot templates=./path/to/templates.txt` to `<script>` tag executing the library.
+Load file with templates as text.
 
 This file holds every custom template used by the library. Here you can write your code.
 
@@ -49,6 +49,69 @@ Use templates to reuse elements.
         //some data 
     </name>
 </template>
+```
+
+### Example code
+
+Template file:
+
+```
+<template-page>
+    <h1>
+        <slot pagetitle/>
+    </h1>
+    <p>
+        <slot pagedescription/>
+    </p>
+</template-page>
+
+<template-home>
+    <template page>
+    
+        <pagetitle>
+            My page
+        </pagetitle>
+        
+        <pagedescription>
+            Description of my page
+        </pagedescription>
+        
+    </template>
+</template-home>
+```
+
+HTML file:
+
+```
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Example slang page</title>
+</head>
+<body>
+    <main>
+        <template home></template>
+    </main>
+
+    <script src="./slang.js"></script>
+    <script>
+        async function init() {
+            const templates = await fetch("./templates.txt").then(response => response.text());
+            const mainContainer = document.querySelector("main");
+            slang(
+                mainContainer.innerHTML,
+                templates,
+                mainContainer
+            );
+        }
+
+        init();
+    </script>
+</body>
+</html>
 ```
 
 ## Alpha stage
