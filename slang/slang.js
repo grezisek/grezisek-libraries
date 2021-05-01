@@ -1,5 +1,6 @@
 slang = (() => (slangMarkup = "", templateCollection, outputContainer) => {
-    if (!templateCollection) return;
+
+    if (!slangMarkup.length || !templateCollection) return;
 
     templateCollection = ( tempRoot => {
         tempRoot.innerHTML = templateCollection;
@@ -43,6 +44,16 @@ slang = (() => (slangMarkup = "", templateCollection, outputContainer) => {
         }
         return root;
     }
-    if (outputContainer) outputContainer.innerHTML = renderer(outputContainer).innerHTML
-    else return renderer(document.createElement("div")).innerHTML;
+    if (outputContainer) {
+        while (outputContainer.lastChild) outputContainer.lastChild.remove();
+        const root = renderer(outputContainer);
+        root.querySelectorAll("script").forEach(script => {
+            script.parentNode.insertBefore(
+                document.createElement("script").appendChild(document.createTextNode(script.innerHTML)).parentNode,
+                script
+            );
+            script.remove();
+        });
+        outputContainer.prepend(...root.childNodes);
+    } else return renderer(document.createElement("div"));
 })();
