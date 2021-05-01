@@ -61,12 +61,22 @@ Template file:
         <a href="/">home</a>
         <a href="?page=contact">contact</a>
     </nav>
-    <h1>
+    <h1 id="page-title">
         <slot pagetitle/>
     </h1>
-    <p>
+    <p id="page-description">
         <slot pagedescription/>
     </p>
+    
+    <script>
+        ((metatitle, metadescription) => {
+            if (!metatitle) metatitle = document.createElement("title");
+            if (!metadescription) metadescription = document.createElement("meta");
+            metatitle.innerHTML = document.querySelector("#page-title").innerHTML;
+            metadescription.name = "description";
+            metadescription.content = document.querySelector("#page-description").innerHTML;
+        })(document.head.querySelector("title"), document.head.querySelector("meta[name='description']"));
+    </script>
 </template-page>
 
 <template-home>
@@ -79,7 +89,6 @@ Template file:
         <pagedescription>
             Description of my page
         </pagedescription>
-        
     </template>
 </template-home>
 
