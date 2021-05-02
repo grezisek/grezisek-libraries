@@ -1,8 +1,8 @@
-const slang = (slangMarkup = "", templateCollection, outputContainer) => slang.translator(slangMarkup, templateCollection, outputContainer);
+const slang = (slangMarkup = "", templateCollection = "", outputContainer) => slang.translator(slangMarkup, templateCollection, outputContainer);
 
 (()=> {
 
-const private = {
+const priv = {
     structDefs: {
         "row": "display:flex;flex-direction:row;",
         "col": "display:flex;flex-direction:column;",
@@ -43,9 +43,9 @@ const private = {
                     if (!acc) acc = "";
         
                     if (i % 2 == 0) {
-                        if (!acc.includes("!mediaQueryHere!")) acc += `.${className}{${private.structDefs[part]}}`;
-                        else acc = acc.replace("!mediaQueryHere!", private.structDefs[part]);
-                    } else acc += ` @media ${private.getMediaRule(part, part.includes("_and_"), part.includes("_or_"))}{.${className}{!mediaQueryHere!}}`;
+                        if (!acc.includes("!mediaQueryHere!")) acc += `.${className}{${priv.structDefs[part]}}`;
+                        else acc = acc.replace("!mediaQueryHere!", priv.structDefs[part]);
+                    } else acc += ` @media ${priv.getMediaRule(part, part.includes("_and_"), part.includes("_or_"))}{.${className}{!mediaQueryHere!}}`;
         
                     return acc;
                 },"");
@@ -65,20 +65,20 @@ const private = {
         const root = tempRoot.cloneNode();
         root.innerHTML = slangMarkup;
 
-        let queue = root.querySelectorAll(private.renderMethods.domQuery);
+        let queue = root.querySelectorAll(priv.renderMethods.domQuery);
         while (queue.length) {
-            queue.forEach(node => private.renderMethods[node.localName]({node, templateCollection}));
-            queue = root.querySelectorAll(private.renderMethods.domQuery);
+            queue.forEach(node => priv.renderMethods[node.localName]({node, templateCollection}));
+            queue = root.querySelectorAll(priv.renderMethods.domQuery);
         }
 
         return root;
     }
 }
 
-Object.defineProperties(private.renderMethods, {
+Object.defineProperties(priv.renderMethods, {
     "domQuery" : {
         writable : false,
-        value : Object.keys(private.renderMethods).join(", ")
+        value : Object.keys(priv.renderMethods).join(", ")
     }
 });
 
@@ -86,9 +86,9 @@ Object.defineProperties(slang, {
     translator: {
         writable: false,
         value: function(slangMarkup, templateCollection, outputContainer) {
-            if (!slangMarkup.length || !templateCollection) return;
+            if (!slangMarkup.length) return;
 
-            templateCollection = ( tempRoot => {
+            if (templateCollection.length) templateCollection = ( tempRoot => {
                 tempRoot.innerHTML = templateCollection;
                 const templates = {};
                 Array.prototype.forEach.call(
@@ -100,7 +100,8 @@ Object.defineProperties(slang, {
             
             if (outputContainer) {
                 while (outputContainer.lastChild) outputContainer.lastChild.remove();
-                const root = private.renderer(outputContainer, slangMarkup, templateCollection);
+                const root = priv.renderer(outputContainer, slangMarkup, templateCollection);
+
                 root.querySelectorAll("script").forEach(script => {
                     script.parentNode.insertBefore(
                         document.createElement("script").appendChild(document.createTextNode(script.innerHTML)).parentNode,
@@ -109,9 +110,7 @@ Object.defineProperties(slang, {
                     script.remove();
                 });
                 outputContainer.prepend(...root.childNodes);
-            }
-        
-            return private.renderer(document.createElement("div"), slangMarkup, templateCollection);
+            } else return priv.renderer(document.createElement("div"), slangMarkup, templateCollection);
         }
     },
     styles: {
