@@ -27,15 +27,24 @@ is to separate code different than HTML, CSS and JS does:
 - **Copy and Paste** [this](https://raw.githubusercontent.com/grezisek/grezisek-libraries/main/slang/slang.js) into your `<script>` tag or script file. Library will be usable in scope.
 - **Link to a .js file** in your project by adding `<script>` with valid `src=""` attribute.
 
-### Templates file
+### Templates
 
-Load file with templates as text.
+Load file with templates as text or write them inline.
 
-This file holds every custom template used by the library. Here you can write your code.
+This file holds every custom template used by the library.
 
 ### Syntax
+```
+slang("required string with markup", "optional string with templates", optionalContainerForResult_NodeReference);
 
-Use templates to reuse elements.
+//examples
+document.body.innerHTML = slang("Hello World");
+document.body.innerHTML = slang("<template hello></template>", "<template-hello>Hello World</template-hello>");
+slang("<template hello></template>", "<template-hello>Hello World</template-hello>", document.body);
+```
+
+
+#### Use templates to reuse elements.
 
 ```
 <template-name></template-name> to define new template called name
@@ -49,6 +58,17 @@ Use templates to reuse elements.
         //some data 
     </name>
 </template>
+```
+
+#### Use structure elements to place data elements or other structure elements.
+
+```
+<struct>
+    //some data
+</struct>
+
+<struct col-992-row></struct> column on mobile, row above 992px width
+<struct loc-500h-wor-1300w?600h-row></struct> column-reverse on mobile, row-reverse above 500px height, row above 1300px width or 600px height
 ```
 
 ### Example code
