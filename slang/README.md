@@ -29,9 +29,7 @@ is to separate code different than HTML, CSS and JS does:
 
 ### Templates
 
-Load file with templates as text or write them inline.
-
-This file holds every custom template used by the library.
+Load file with templates as text, write them inline or skip them.
 
 ### Syntax
 ```
