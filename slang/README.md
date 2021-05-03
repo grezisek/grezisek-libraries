@@ -250,10 +250,11 @@ Choose which screen dimensions to use:
 
 ## Event publishers and subscriptions
 
-Subscribe to some of available events. Your function will run each time the event is taking place.
+Subscribe/unsubscribe to some of available events. Your function will run each time the event is taking place.
 
 ```
 slang.subscribe("eventName", callbackFunction);
+slang.unsubscribe("eventName", callbackFunction);
 ```
 
 - `renderStart` - fires near beginning of rendering process. Arguments passed to callback: 
