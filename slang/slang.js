@@ -51,13 +51,6 @@ function markupTranslator(slangMarkup, templatesMarkup, outputContainer) {
         while (outputContainer.lastChild) outputContainer.lastChild.remove();
 
         const root = props.renderer(outputContainer, slangMarkup, templates);
-        root.querySelectorAll("script").forEach(script => {
-            script.parentNode.insertBefore(
-                document.createElement("script").appendChild(document.createTextNode(script.innerHTML)).parentNode,
-                script
-            );
-            script.remove();
-        });
 
         outputContainer.prepend(...root.childNodes);
     } else return props.renderer(document.createElement("div"), slangMarkup, templates);
@@ -121,7 +114,15 @@ function createProperties() {
                 queue.forEach(node => p.renderMethods[node.localName]({node, templates}));
                 queue = root.querySelectorAll(p.renderMethods.domQuery);
             }
-    
+
+            root.querySelectorAll("script").forEach(script => {
+                script.parentNode.insertBefore(
+                    document.createElement("script").appendChild(document.createTextNode(script.innerHTML)).parentNode,
+                    script
+                );
+                script.remove();
+            });
+
             return root;
         },
         public: {
