@@ -8,18 +8,18 @@
 ## Usage
 
 
-### How to run library
+### How to execute library
 ```
-slang("required string with markup", "optional string with templates", optionalContainerForResult_NodeReference);
+slang("required string with markup", "optional string with templates", outputContainer);
 ```
 
 - **"required string with markup"** slang/html markup to render
 - **"optional string with templates"** slang/html markup with templates
-- **optionalContainerForResult_NodeReference** node reference to container for result
+- **outputContainer** node reference to container for result
 
 ### How to use resulting code
 
-If **optionalContainerForResult_NodeReference** is 
+If **outputContainer** is 
 
 **not specified**, library will return a node reference to container with code.
 You can store it inside a variable or use directly:
@@ -247,3 +247,35 @@ Choose which screen dimensions to use:
     </pagecontent>
 </template>
 ```
+
+## Event publishers and subscriptions
+
+Subscribe to some of available events. Your function will run each time the event is taking place.
+
+```
+slang.subscribe("eventName", callbackFunction);
+```
+
+- `renderStart` - fires near beginning of rendering process. Arguments passed to callback: 
+        - `eventName` - the same as when subscribing
+        - `outputContainer` - container node before processing
+        - `templates` - object with template node references assigned by template name
+- `renderEnd` - fires near end of rendering process. Arguments passed to callback: 
+        - `eventName`
+        - `outputContainer` - container node after processing
+- `eachStructRenderStart` - fires near beginning of each struct rendering process. Arguments passed to callback: 
+        - `eventName`
+        - `node` - original struct node
+        - `struct` - struct node before processing
+- `eachStructRenderEnd` - fires near end of each struct rendering process. Arguments passed to callback: 
+        - `eventName`
+        - `struct` - struct node after processing
+- `eachTemplateRenderStart` - fires near beginning of each template rendering process. Arguments passed to callback: 
+        - `eventName`
+        - `node` - original template node
+        - `template` - template node before processing
+- `eachTemplateRenderEnd` fires near end of each template rendering process. Arguments passed to callback: 
+        - `eventName`
+        - `template` - template node after processing
+
+
