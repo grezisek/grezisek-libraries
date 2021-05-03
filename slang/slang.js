@@ -3,10 +3,10 @@ const slang = (
     templatesString = "",
     outputContainer
 
-) => slang.translator(slangMarkup, templatesString, outputContainer);
+) => slang.renderer(slangMarkup, templatesString, outputContainer);
 
 (()=> {
-function handleClassName(retNode, className) {
+function structClassProcessor(retNode, className) {
     retNode.classList.add("struct", className);
 
     if (slang.styles.classList.contains(className)) return;
@@ -26,7 +26,7 @@ function handleClassName(retNode, className) {
     slang.styles.classList.add(className);
 }
 
-function createTemplateCollection(templatesMarkup) {
+function templateRenderer(templatesMarkup) {
     if (!templatesMarkup.length) return {};
 
     const tempRoot = document.createElement("div");
@@ -42,18 +42,48 @@ function createTemplateCollection(templatesMarkup) {
     return templates;
 }
 
-function markupTranslator(slangMarkup, templatesMarkup, outputContainer) {
-    if (!slangMarkup.length) return;
+function markupTranslator(tempRoot, slangMarkup, templates) {
+    const root = tempRoot.cloneNode();
+    root.innerHTML = slangMarkup;
 
-    const templates = createTemplateCollection(templatesMarkup);
+    let queue = root.querySelectorAll(props.renderMethods.domQuery);
+    while (queue.length) {
+        queue.forEach(node => props.renderMethods[node.localName]({node, templates}));
+        queue = root.querySelectorAll(props.renderMethods.domQuery);
+    }
 
-    if (outputContainer) {
-        while (outputContainer.lastChild) outputContainer.lastChild.remove();
+    root.querySelectorAll("script").forEach(script => {
+        script.parentNode.insertBefore(
+            document.createElement("script").appendChild(document.createTextNode(script.innerHTML)).parentNode,
+            script
+        );
+        script.remove();
+    });
 
-        const root = props.renderer(outputContainer, slangMarkup, templates);
+    return root;
+}
 
-        outputContainer.prepend(...root.childNodes);
-    } else return props.renderer(document.createElement("div"), slangMarkup, templates);
+function markupRenderer(contentMarkup, templatesMarkup, outputContainer) {
+    if (!contentMarkup.length) return;
+
+    const templates = templateRenderer(templatesMarkup);
+    if (!outputContainer) outputContainer = document.createElement("div");
+
+    props.publishers.renderStart.forEach(callback => callback({
+        eventName: "renderStart",
+        outputContainer,
+        templates
+    }));
+
+    while (outputContainer.lastChild) outputContainer.lastChild.remove();
+    outputContainer.prepend(...markupTranslator(outputContainer, contentMarkup, templates).childNodes);
+
+    props.publishers.renderEnd.forEach(callback => callback({
+        eventName: "renderEnd",
+        outputContainer
+    }));
+
+    return outputContainer;
 };
 
 function createProperties() {
@@ -72,30 +102,60 @@ function createProperties() {
                     return;
                 }
     
-                const customTemplate = templates[node.attributes[0].name].cloneNode(true);
+                const template = templates[node.attributes[0].name].cloneNode(true);
+
+                props.publishers.eachTemplateRenderStart.forEach(callback => callback({
+                    eventName: "eachTemplateRenderStart",
+                    node,
+                    template
+                }));
                 
-                customTemplate.querySelectorAll("slot")
+                template.querySelectorAll("slot")
                     .forEach(slot => slot.outerHTML = 
                         (src => src ? src.innerHTML : slot.outerHTML)
                             ( slot.attributes.length ? node.content.querySelector(slot.attributes[0].name) : null)
                     );
                     
-                node.outerHTML = customTemplate.innerHTML;
+                node.outerHTML = template.innerHTML;
+
+                props.publishers.eachTemplateRenderEnd.forEach(callback => callback({
+                    eventName: "eachTemplateRenderEnd",
+                    node
+                }));
             },
             struct({node}) {
-                let retNode;
+                let returnNode;
+
+                props.publishers.eachStructRenderStart.forEach(callback => callback({
+                    eventName: "eachStructRenderStart",
+                    node,
+                    returnNode
+                }));
         
-                if (node.attributes[1]) retNode = document.createElement(node.attributes[1].name);
-                else retNode = document.createElement("div");
+                if (node.attributes[1]) returnNode = document.createElement(node.attributes[1].name);
+                else returnNode = document.createElement("div");
         
-                retNode.prepend(...node.childNodes);
-                handleClassName(retNode, node.attributes.length ? node.attributes[0].name.replace("?","_or_").replace("!","_and_") : "col");
-                node.outerHTML = retNode.outerHTML;
+                returnNode.prepend(...node.childNodes);
+                structClassProcessor(returnNode, node.attributes.length ? node.attributes[0].name.replace("?","_or_").replace("!","_and_") : "col");
+                node.outerHTML = returnNode.outerHTML;
+
+                props.publishers.eachStructRenderEnd.forEach(callback => callback({
+                    eventName: "eachStructRenderEnd",
+                    node
+                }));
             }
         },
         styles: {
             node: document.head.appendChild(document.createElement("style")),
             classList: document.createElement("null-node").classList
+        },
+        publishers: {
+            renderStart: [],
+            renderEnd: [],
+            eachStructRenderStart: [],
+            eachStructRenderEnd: [],
+            eachTemplateRenderStart: [],
+            eachTemplateRenderEnd: [],
         },
         getMediaRule(part, isAnd, isOr) {
             if (isAnd) part = part.split("_and_");
@@ -105,30 +165,18 @@ function createProperties() {
                 else return `(min-height: ${parseInt(rule)}px)`
             }).join(isAnd ? " and " : isOr ? ", " : "" );
         },
-        renderer(tempRoot, slangMarkup, templates) {
-            const root = tempRoot.cloneNode();
-            root.innerHTML = slangMarkup;
-    
-            let queue = root.querySelectorAll(p.renderMethods.domQuery);
-            while (queue.length) {
-                queue.forEach(node => p.renderMethods[node.localName]({node, templates}));
-                queue = root.querySelectorAll(p.renderMethods.domQuery);
-            }
-
-            root.querySelectorAll("script").forEach(script => {
-                script.parentNode.insertBefore(
-                    document.createElement("script").appendChild(document.createTextNode(script.innerHTML)).parentNode,
-                    script
-                );
-                script.remove();
-            });
-
-            return root;
-        },
         public: {
-            translator: {
+            renderer: {
                 writable: false,
-                value: markupTranslator
+                value: markupRenderer
+            },
+            subscribe: {
+                writable: false,
+                value: (eventName, callback) => {
+                    if (!p.publishers[eventName]) return;
+                    if (p.publishers[eventName].includes(callback)) return;
+                    p.publishers[eventName].push(callback);
+                }
             }
         }
     };
