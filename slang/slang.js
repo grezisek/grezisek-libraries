@@ -109,7 +109,7 @@ function createProperties() {
                     node,
                     template
                 }));
-                
+
                 template.querySelectorAll("slot")
                     .forEach(slot => slot.outerHTML = 
                         (src => src ? src.innerHTML : slot.outerHTML)
@@ -120,20 +120,20 @@ function createProperties() {
 
                 props.publishers.eachTemplateRenderEnd.forEach(callback => callback({
                     eventName: "eachTemplateRenderEnd",
-                    node
+                    template: node
                 }));
             },
             struct({node}) {
                 let returnNode;
+        
+                if (node.attributes[1]) returnNode = document.createElement(node.attributes[1].name);
+                else returnNode = document.createElement("div");
 
                 props.publishers.eachStructRenderStart.forEach(callback => callback({
                     eventName: "eachStructRenderStart",
                     node,
-                    returnNode
+                    struct: returnNode
                 }));
-        
-                if (node.attributes[1]) returnNode = document.createElement(node.attributes[1].name);
-                else returnNode = document.createElement("div");
         
                 returnNode.prepend(...node.childNodes);
                 structClassProcessor(returnNode, node.attributes.length ? node.attributes[0].name.replace("?","_or_").replace("!","_and_") : "col");
@@ -141,7 +141,7 @@ function createProperties() {
 
                 props.publishers.eachStructRenderEnd.forEach(callback => callback({
                     eventName: "eachStructRenderEnd",
-                    node
+                    struct: node
                 }));
             }
         },
@@ -176,6 +176,14 @@ function createProperties() {
                     if (!p.publishers[eventName]) return;
                     if (p.publishers[eventName].includes(callback)) return;
                     p.publishers[eventName].push(callback);
+                }
+            },
+            unsubscribe: {
+                writable: false,
+                value: (eventName, callback) => {
+                    if (!p.publishers[eventName]) return;
+                    if (!p.publishers[eventName].includes(callback)) return;
+                    p.publishers[eventName].splice(p.publishers[eventName].indexOf(callback), 1);
                 }
             }
         }
