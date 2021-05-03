@@ -69,7 +69,7 @@ slang("<template hello></template>", "<template-hello>Hello World</template-hell
 </struct>
 ```
 
-- select correct html tag for container
+- select correct html tag for container (default: div)
 
 ```
 <struct row article>
@@ -181,5 +181,69 @@ Choose which screen dimensions to use:
 </template>
 ```
 
+### Example
 
+**"optional string with templates"**:
 
+```
+<template-page>
+    <div style="position:absolute;left:-300vw;">
+        <h1 data-meta="title">
+            <slot pagetitle></slot>
+        </h1>
+        <p data-meta="description">
+            <slot pagescription></slot>
+        </p>
+    </div>
+
+    <struct col header>
+        <struct col-600-row>
+            <slot pagethumb></slot>
+            <h1 class="page-title">
+                <slot pagetitle></slot>
+            </h1>
+        </struct>
+
+        <p class="page-description">
+            <slot pagedescription></slot>
+        </p>
+    </struct>
+
+    <main>
+        <slot pagecontent></slot>
+    </main>
+
+    <script>
+        ((metatitle, metadescription) => {
+            if (!metatitle) metatitle = document.createElement("title");
+            if (!metadescription) metadescription = document.createElement("meta");
+            metadescription.name = "description";
+            metatitle.innerHTML = document.querySelector('[data-meta="title"]').innerHTML;
+            metadescription.content = document.querySelector('[data-meta="description"]').innerHTML;
+
+        })(document.head.querySelector("title"), document.head.querySelector("meta[name='description']"));
+    </script>
+</template-page>
+```
+
+**"required string with markup"**
+
+```
+<template page>
+    <pagethumb>
+        <img src="image.jpg">
+    </pagethumb>
+    
+    <pagetitle>
+        My page
+    </pagetitle>
+    
+    <pagedescription>
+        My page is the best
+    </pagedescription>
+    
+    <pagecontent>
+        This is my page and it is the best
+    </pagecontent>
+</template>
+```
