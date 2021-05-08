@@ -21,10 +21,11 @@ slang("required string with markup", "optional string with templates", outputCon
 
 ### How to use resulting code
 
-If **outputContainer** is 
+The library will return a node reference to temporary node with code.
 
-**not specified**, library will return a node reference to container with code.
-You can store it inside a variable or use directly:
+Additionally, if **outputContainer** is specified, node will be emptied and used as container for output.
+
+You can store a result inside a variable or use it directly:
 
 ```
 const markup = slang("test");
@@ -32,8 +33,6 @@ console.log(markup);
 
 console.log(slang("test2"));
 ```
-
-**specified**, node will be emptied and used as container for output
 
 ### Examples
 
