@@ -210,6 +210,29 @@ Template elements let you reuse your markup.
 - **script** - script source in head
 - **iframe** - embedded iframe
 
+
+## Event publishers and subscriptions
+
+Subscribe and unsubscribe to some of available events.
+Your function will run each time the event is taking place and take up to three arguments (eventName, oldNode, newNode).
+
+```
+slang.subscribe("eventName", callbackFunction);
+slang.unsubscribe("eventName", callbackFunction);
+```
+
+- `renderStart` - before rendering process. `callbackFunction("renderStart", outputContainer, templates)`
+- `renderEnd` - after rendering process.  `callbackFunction("renderEnd", outputContainer)`
+
+- `eachStructRenderStart` - before rendering of struct element. `callbackFunction("eachStructRenderStart", node, newNode)`
+- `eachStructRenderEnd` - after rendering of struct element. `callbackFunction("eachStructRenderEnd", node, newNode)`
+
+- `eachTemplateRenderStart` - before rendering of template element. `callbackFunction("eachTemplateRenderStart", node, template)`
+- `eachTemplateRenderEnd` - after rendering of template element. `callbackFunction("eachTemplateRenderEnd", node, template)`
+
+- `eachDataRenderStart` - before rendering of data element. `callbackFunction("eachDataRenderStart", node, template)`
+- `eachDataRenderEnd` - after rendering of data element. `callbackFunction("eachDataRenderEnd", node, template)`
+
 ### Example
 
 **"optional string with templates"**:
@@ -278,24 +301,3 @@ Template elements let you reuse your markup.
 </template>
 ```
 
-## Event publishers and subscriptions
-
-Subscribe and unsubscribe to some of available events.
-Your function will run each time the event is taking place and take up to three arguments (eventName, oldNode, newNode).
-
-```
-slang.subscribe("eventName", callbackFunction);
-slang.unsubscribe("eventName", callbackFunction);
-```
-
-- `renderStart` - before rendering process. `callbackFunction("renderStart", outputContainer, templates)`
-- `renderEnd` - after rendering process.  `callbackFunction("renderEnd", outputContainer)`
-
-- `eachStructRenderStart` - before rendering of struct element. `callbackFunction("eachStructRenderStart", node, newNode)`
-- `eachStructRenderEnd` - after rendering of struct element. `callbackFunction("eachStructRenderEnd", node, newNode)`
-
-- `eachTemplateRenderStart` - before rendering of template element. `callbackFunction("eachTemplateRenderStart", node, template)`
-- `eachTemplateRenderEnd` - after rendering of template element. `callbackFunction("eachTemplateRenderEnd", node, template)`
-
-- `eachDataRenderStart` - before rendering of data element. `callbackFunction("eachDataRenderStart", node, template)`
-- `eachDataRenderEnd` - after rendering of data element. `callbackFunction("eachDataRenderEnd", node, template)`
