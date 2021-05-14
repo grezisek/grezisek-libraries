@@ -229,8 +229,8 @@ slang.unsubscribe("eventName", callbackFunction);
 - `eachTemplateRenderStart` - before rendering of template element. `callbackFunction("eachTemplateRenderStart", node, template)`
 - `eachTemplateRenderEnd` - after rendering of template element. `callbackFunction("eachTemplateRenderEnd", node, template)`
 
-- `eachDataRenderStart` - before rendering of data element. `callbackFunction("eachDataRenderStart", node, template)`
-- `eachDataRenderEnd` - after rendering of data element. `callbackFunction("eachDataRenderEnd", node, template)`
+- `eachDataRenderStart` - before rendering of data element. `callbackFunction("eachDataRenderStart", node, newNode)`
+- `eachDataRenderEnd` - after rendering of data element. `callbackFunction("eachDataRenderEnd", node, newNode)`
 
 ### Example
 
