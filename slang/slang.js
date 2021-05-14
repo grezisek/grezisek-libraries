@@ -287,7 +287,6 @@
             },
             data({node}) {
                 let fileType = node.innerText.slice((Math.max(0, node.innerText.lastIndexOf(".")) || Infinity) + 1).replace(/[ \n]/g, "");
-                console.log(fileType.length)
                 if (support.defs.data[fileType]) {
                     node.classList.add("async", "file", `file--${fileType}`);
                     support.defs.data[fileType][0](node, support.defs.data[fileType][1]);
