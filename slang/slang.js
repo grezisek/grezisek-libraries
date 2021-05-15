@@ -95,7 +95,6 @@
     
     /** 
     * Copies names and values of attributes from sourceNode into targetNode
-    * @return {undefined}
     */
     function cloneAttributes(targetNode, sourceNode) {
         for (let i = 0; i < sourceNode.attributes.length; i++)
@@ -109,6 +108,7 @@
     * Executes publication of render event
     */
     function elementRenderPublisher(eventName, oldNode, newNode) {
+        if (eventName == "eachDataRenderEnd") dataRenderCounterStack--;
         eventSubscriptionList[eventName].forEach(callback => callback(eventName, oldNode, newNode));
     }
     
@@ -154,11 +154,11 @@
             newNode.addEventListener("load", event => {
                 newNode.classList.remove("loading");
                 newNode.classList.add("loaded");
+                elementRenderPublisher("eachDataRenderEnd", node, newNode);
+
             });
             newNode.setAttribute("type", mimetype);
             newNode.setAttribute("src", node.innerText);
-    
-            elementRenderPublisher("eachDataRenderEnd", node, newNode);
             node.replaceWith(newNode);
         },
         audio(node, mimetype, isOutputContainer) {
@@ -187,9 +187,8 @@
             const dataCont = node.parentNode.cloneNode();
             dataCont.innerHTML = data;
             Array.prototype.forEach.call(dataCont.children, child => cloneAttributes(child, node));
-    
-            elementRenderPublisher("eachDataRenderEnd", node, dataCont.childNodes);
             node.replaceWith(...dataCont.childNodes);
+            elementRenderPublisher("eachDataRenderEnd", node, dataCont.childNodes);
         },
         script(node, mimetype, isOutputContainer) {
             const newNode = document.head.appendChild(document.createElement("script"));
@@ -214,6 +213,8 @@
         }
     }
     
+    let dataRenderCounterStack = 0;
+
     /** 
     * Index of supported slang elements with their render methods and parameters of rendering
     */  
@@ -289,6 +290,7 @@
                 node.replaceWith(newNode);
             },
             data({node}, isOutputContainer) {
+                dataRenderCounterStack++;
                 node.innerHTML = node.innerText.replace(/[ \n]/g, "");
                 let fileType = node.innerText.slice((Math.max(0, node.innerText.lastIndexOf(".")) || Infinity) + 1);
                 if (support.defs.data[fileType]) {
@@ -432,23 +434,29 @@
     */
     function markupRenderer(contentMarkup, templatesMarkup, outputContainer, isOutputContainer) {
         if (!contentMarkup.length) return outputContainer;
-    
         const templates = createTemplateCollection(templatesMarkup);
-    
         eventSubscriptionList.renderStart.forEach(callback => callback({
             eventName: "renderStart",
             outputContainer,
             templates
         }));
-    
+
+        function dataLoadedCounterCallback() {
+            if (!dataRenderCounterStack) eventSubscriptionList.renderEnd.forEach(callback => callback({
+                eventName: "renderEnd",
+                outputContainer
+            }));
+        }
+
+        function rendered() {
+            if (dataRenderCounterStack) eventSubscriptionList.eachDataRenderEnd.unshift(dataLoadedCounterCallback);
+            else dataLoadedCounterCallback();
+        }
+
         while (outputContainer.lastChild) outputContainer.lastChild.remove();
         outputContainer.prepend(...createNodesFromMarkup(outputContainer, contentMarkup, templates, isOutputContainer).childNodes);
-    
-        eventSubscriptionList.renderEnd.forEach(callback => callback({
-            eventName: "renderEnd",
-            outputContainer
-        }));
-    
+
+        rendered();
         return outputContainer;
     }
 })();
