@@ -1,9 +1,7 @@
 /** 
 * slang.js
 *
-* Markup renderer
-*
-* Creates window.slang function
+* @fileOverview Markup renderer. Creates window.slang function.
 *
 * @author   Grezisek
 * @param    {String} slangMarkup        html / slang markup to render
@@ -15,8 +13,12 @@
     window.slang = (
         slangMarkup = "",
         templatesString = "",
-        outputContainer = document.createElement("div")
-    ) => markupRenderer(slangMarkup, templatesString, outputContainer);
+        outputContainer
+    ) => {
+        const isOutputContainer = !!outputContainer;
+        if (!outputContainer) outputContainer = document.createElement("div");
+        return markupRenderer(slangMarkup, templatesString, outputContainer, isOutputContainer);
+    };
     
     Object.defineProperties(slang, createPublicProperties());
 
@@ -114,7 +116,7 @@
     * Index of supported data elements
     */ 
     const dataTypes = {
-        iframe(node, mimetype) {
+        iframe(node, mimetype, isOutputContainer) {
             const newNode = document.createElement("iframe");
             elementRenderPublisher("eachDataRenderStart", node, newNode);
             cloneAttributes(newNode, node);
@@ -128,7 +130,7 @@
             newNode.src = node.innerText;
             elementRenderPublisher("eachDataRenderEnd", node, newNode);
         },
-        video(node, mimetype) {
+        video(node, mimetype, isOutputContainer) {
             const sourceNode = document.createElement("source");
             sourceNode.setAttribute("src", node.innerText);
             sourceNode.setAttribute("type", mimetype);
@@ -143,7 +145,7 @@
             elementRenderPublisher("eachDataRenderEnd", node, newNode);
             node.replaceWith(newNode);
         },
-        image(node, mimetype) {
+        image(node, mimetype, isOutputContainer) {
             const newNode = document.createElement("img");
             elementRenderPublisher("eachDataRenderStart", node, newNode);
             cloneAttributes(newNode, node);
@@ -159,7 +161,7 @@
             elementRenderPublisher("eachDataRenderEnd", node, newNode);
             node.replaceWith(newNode);
         },
-        audio(node, mimetype) {
+        audio(node, mimetype, isOutputContainer) {
             const sourceNode = document.createElement("source");
             sourceNode.setAttribute("src", node.innerText);
             sourceNode.setAttribute("type", mimetype);
@@ -174,7 +176,7 @@
             elementRenderPublisher("eachDataRenderEnd", node, newNode);
             node.replaceWith(newNode);
         },
-        async html(node, mimetype) {
+        async html(node, mimetype, isOutputContainer) {
             elementRenderPublisher("eachDataRenderStart", node);
     
             const request = new Request(node.innerText);
@@ -189,7 +191,7 @@
             elementRenderPublisher("eachDataRenderEnd", node, dataCont.childNodes);
             node.replaceWith(...dataCont.childNodes);
         },
-        script(node, mimetype) {
+        script(node, mimetype, isOutputContainer) {
             const newNode = document.head.appendChild(document.createElement("script"));
             elementRenderPublisher("eachDataRenderStart", node, newNode);
             cloneAttributes(newNode, node);
@@ -199,8 +201,9 @@
             elementRenderPublisher("eachDataRenderEnd", node, newNode);
             node.remove();
         },
-        style(node, mimetype) {
-            const newNode = document.head.appendChild(document.createElement("link"));
+        style(node, mimetype, isOutputContainer) {
+            const newNode = document.createElement("link");
+            if (isOutputContainer) document.head.appendChild(newNode);
             elementRenderPublisher("eachDataRenderStart", node, newNode);
             cloneAttributes(newNode, node);
             newNode.setAttribute("rel", "stylesheet");
@@ -248,7 +251,7 @@
             }
         },
         elements: {
-            template({node, templates}) {
+            template({node, templates}, isOutputContainer) {
                 if (!node.attributes.length || !templates[node.attributes[0].name]) {
                     console.error("Template not found: ", node);
                     node.outerHTML = node.outerHTML.replace(node.localName, `${node.localName}-error`);
@@ -269,7 +272,7 @@
         
                 elementRenderPublisher("eachTemplateRenderEnd", node, template);
             },
-            struct({node}) {
+            struct({node}, isOutputContainer) {
                 let newNode;
                 if (node.attributes[1]) newNode = document.createElement(node.attributes[1].name);
                 else newNode = document.createElement("div");
@@ -285,11 +288,12 @@
                 elementRenderPublisher("eachStructRenderEnd", node, newNode);
                 node.replaceWith(newNode);
             },
-            data({node}) {
-                let fileType = node.innerText.slice((Math.max(0, node.innerText.lastIndexOf(".")) || Infinity) + 1).replace(/[ \n]/g, "");
+            data({node}, isOutputContainer) {
+                node.innerHTML = node.innerText.replace(/[ \n]/g, "");
+                let fileType = node.innerText.slice((Math.max(0, node.innerText.lastIndexOf(".")) || Infinity) + 1);
                 if (support.defs.data[fileType]) {
                     node.classList.add("async", "file", `file--${fileType}`);
-                    support.defs.data[fileType][0](node, support.defs.data[fileType][1]);
+                    support.defs.data[fileType][0](node, support.defs.data[fileType][1], isOutputContainer);
                 } else dataTypes.iframe(node, "");
             }
         }
@@ -374,13 +378,13 @@
     * Loops while some elements can be rendered inside root, renders and replaces them
     * @return {Node} root clone
     */
-    function createNodesFromMarkup(root, markup, templates) {
+    function createNodesFromMarkup(root, markup, templates, isOutputContainer) {
         const tempRoot = root.cloneNode();
         tempRoot.innerHTML = markup;
     
         let queue = tempRoot.querySelectorAll(support.selectorAll);
         while (queue.length) {
-            queue.forEach(node => support.elements[node.localName]({node, templates}));
+            queue.forEach(node => support.elements[node.localName]({node, templates}, isOutputContainer));
             queue = tempRoot.querySelectorAll(support.selectorAll);
         }
     
@@ -426,7 +430,7 @@
     * Private version of window.slang with defaults granted
     * @return {Node}
     */
-    function markupRenderer(contentMarkup, templatesMarkup, outputContainer) {
+    function markupRenderer(contentMarkup, templatesMarkup, outputContainer, isOutputContainer) {
         if (!contentMarkup.length) return outputContainer;
     
         const templates = createTemplateCollection(templatesMarkup);
@@ -438,7 +442,7 @@
         }));
     
         while (outputContainer.lastChild) outputContainer.lastChild.remove();
-        outputContainer.prepend(...createNodesFromMarkup(outputContainer, contentMarkup, templates).childNodes);
+        outputContainer.prepend(...createNodesFromMarkup(outputContainer, contentMarkup, templates, isOutputContainer).childNodes);
     
         eventSubscriptionList.renderEnd.forEach(callback => callback({
             eventName: "renderEnd",
