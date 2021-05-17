@@ -11,7 +11,7 @@ function getFile(filePath = "") {
             return promiseResponse(store.transaction);
         })
     }})((permissions, callback) => promiseResponse(Object.assign(indexedDB.open('file-database'), {
-        onupgradeneeded: () => this.result.createObjectStore('files')
+        onupgradeneeded: (event) => event.target.result.createObjectStore('files')
     })).then((db) => callback(db.transaction('files', permissions).objectStore('files'))));
 
     //create internal methods
