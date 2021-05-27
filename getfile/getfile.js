@@ -1,27 +1,26 @@
-async function getFile(filePath = "") {
+async function getFile(filePath = "", options={}, responseMode) {
     //solve cache
-    const fileHeadRequest = new Request(filePath, { method: "HEAD" });
-    const fileHeadResponse = await fetch(fileHeadRequest);
-    const fileLastModified = fileHeadResponse.headers.get("Last-Modified");
+    const fileHeadResponse = await fetch(filePath, { method: "HEAD" });
+    const fileLastModified = Math.floor(new Date(fileHeadResponse.headers.get("Last-Modified")).getTime() / 6000) * 6000;
 
     let local = localStorage.getItem("grezisek-" + filePath);
     if (local) local = JSON.parse(local)
-    else local = { lastModified: "Thu, 01 Jan 1970 00:00:00 GMT" };
-
+    else local = { lastModified: "0" };
     //cached return
     if (local.lastModified == fileLastModified) return JSON.parse(local.data);
 
     //new fetch
-    const fileRequest = new Request(filePath, { cache: "reload" });
+    const fileRequest = new Request(filePath, Object.assign({ cache: "reload" }, options));
     const fileResponse = await fetch(fileRequest);
-    const fileData = await fileResponse.text();
+    const fileData = await fileResponse[responseMode || "text"]();
 
     localStorage.setItem(
         "grezisek-" + filePath,
         JSON.stringify({ "lastModified": fileLastModified, "data": JSON.stringify(fileData) })
     );
-    if (JSON.parse(JSON.parse(localStorage.getItem("grezisek-" + filePath)).data) != fileData) localStorage.removeItem("grezisek-" + filePath);
-
+    
+    //validation disabled, todo: add validation
+    
     //live return
     return fileData;
 }
