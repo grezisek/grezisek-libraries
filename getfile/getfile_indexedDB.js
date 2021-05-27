@@ -1,5 +1,5 @@
-function getFile(filePath = "") {
-    return getFile.load(filePath);
+function getFile(filePath = "", options={}, responseMode) {
+    return getFile.load(filePath, options={}, responseMode);
 }
 
 (promiseResponse => {
@@ -8,6 +8,10 @@ function getFile(filePath = "") {
         get: key => filestorage('readonly', store => promiseResponse(store.get(key))),
         set: (key, value) => filestorage('readwrite', store => {
             store.put(value, key);
+            return promiseResponse(store.transaction);
+        }),
+        del: key => filestorage('readwrite', store => {
+            store.delete(key);
             return promiseResponse(store.transaction);
         })
     }})((permissions, callback) => promiseResponse(Object.assign(indexedDB.open('file-database'), {
@@ -18,32 +22,37 @@ function getFile(filePath = "") {
     Object.defineProperties(getFile, {
         load: {
             writable: false,
-            value: async path => {
-                const fileHeadResponse = await fetch(new Request(path, { method: "HEAD" }));
-                const fileLastModified = fileHeadResponse.headers.get("Last-Modified");
+            value: async (filePath, options={}, responseMode) => {
+                //solve cache
+                const fileHeadResponse = await fetch(filePath, { method: "HEAD" });
+                if (!fileHeadResponse.ok) return;
+                const fileLastModified = Math.floor(new Date(fileHeadResponse.headers.get("Last-Modified")).getTime() / 6000) * 6000;
 
-                let cached = await get("grezisek-" + path);
-
-                if (cached) cached = JSON.parse(cached);
-                else cached = { lastModified: "Thu, 01 Jan 1970 00:00:00 GMT" };
+                let local = localStorage.getItem("grezisek-" + filePath);
+                if (local) local = JSON.parse(local)
+                else local = { lastModified: "0" };
             
-                if (fileHeadResponse.headers.get("Last-Modified") == cached.lastModified)
-                    return JSON.parse(cached.data);
+                //cached return
+                if (local.lastModified == fileLastModified) 
+                    return responseMode == "json" ? JSON.parse(local.data) : local.data;
 
-                const fileRequest = new Request(path, { cache: "reload" });
-                const fileResponse = await fetch(fileRequest);
+                //new fetch
+                const fileResponse = await fetch(filePath, Object.assign({ cache: "reload" }, options));
+                if (!fileResponse.ok) return;
                 const fileData = await fileResponse.text();
 
-                set(
-                    "grezisek-" + path,
-                    JSON.stringify({ "lastModified": fileLastModified, "data": JSON.stringify(fileData) })
-                );
+                set("grezisek-" + filePath, JSON.stringify({ "lastModified": fileLastModified, "data": fileData }));
 
+                if (fileData != JSON.parse(get("grezisek-" + filePath)).data) {
+                    console.warn(`getFile: file content mismatch in cached ${filePath}. Deleting corrupted cache data...`);
+                    del("grezisek-" + filePath);
+                }
+                
+                //live return
                 return fileData;
             }
         }
     });
-
 })(request => new Promise((ok, fail) => {
     request.oncomplete = request.onsuccess = () => ok(request.result);
     request.onabort = request.onerror = () => fail(request.error);
