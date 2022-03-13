@@ -34,7 +34,7 @@ function getFile(filePath = "", options={}, responseMode) {
                     console.warn(`getFile: file content mismatch in cached ${filePath}. Deleting corrupted cache data...`);
                     del("grezisek-" + filePath);
                 }
-                return fileData;
+                return responseMode == "json" ? JSON.parse(fileData) : fileData
             }
         }
     });
